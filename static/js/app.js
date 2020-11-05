@@ -6,10 +6,10 @@ d3.json('samples.json').then(function(data) {
     // select data and save them in variables for next work
     console.log(data);
     const names = data.names;
-    const metadatas = data.metadata;
+    const metadata = data.metadata;
     const samples = data.samples;
     console.log(names);
-    console.log(metadatas);
+    console.log(metadata);
     console.log(samples);
 
     // add ids to dropdown menu:
@@ -21,10 +21,20 @@ d3.json('samples.json').then(function(data) {
         dropdownMenu.append("option").attr("value", id).text(`${id}`);
     });
     
+    var selectedID = names[0];
+    console.log(`test id: ${selectedID}`);
+
+    // select metadata based on the id:
+    function filterMetadata(i) {
+        return i.id === +selectedID;
+    }
+    // we can use 'find' function to select the metadata as an object (not array of 1)
+    var sampleMeta = metadata.find(filterMetadata);
+    console.log(sampleMeta);
+    // append sample metadata to html
+    Object.entries(sampleMeta).forEach(([key, value]) => metadataHtml.append("p").text(`${key}: ${value}`)
+    );
+
     
-
-
-
-
 });
 
