@@ -11,9 +11,10 @@ d3.json('samples.json').then(function(data) {
     console.log(metadatas);
     console.log(samples);
 
+    // add ids to dropdown menu:
+    for (var i=0; i < names.length; i++) {
+        dropdownMenu.append("option").attr("value", names[i]).text(`${names[i]}`);
+    };
     
-
-
-
 });
 
