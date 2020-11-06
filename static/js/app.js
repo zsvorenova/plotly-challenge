@@ -41,16 +41,13 @@ d3.json('samples.json').then(function(data) {
     // 3. BAR CHART FOR SELECTED ID
     var idSample = samples.filter(filterId)[0]; // this is same as find above, returns first value
     console.log(idSample);
-    // collect tha data for the sample
-    var otu = idSample.otu_ids;
-    var values = idSample.sample_values;
-    var labels = idSample.otu_labels;
+    
     // create an array of the data for plotting
     var sampleData=[];
 
     for (var i=0; i < idSample.otu_ids.length; i++) {
         sampleData[i]= {
-            otu_id: "OTU "+idSample.otu_ids[i],
+            otu_id: "OTU " + idSample.otu_ids[i],
             value: idSample.sample_values[i],
             label: idSample.otu_labels[i]
     }};
@@ -68,12 +65,13 @@ d3.json('samples.json').then(function(data) {
     reversedData = top10Data.reverse();
     console.log(reversedData);
 
-    // Trace1 for the Greek Data
-    var trace1 = {
+    // Plot the data for the test subject samples
+    // create trace
+        var trace1 = {
         x: reversedData.map(object => object.value),
         y: reversedData.map(object => object.otu_id),
         text: reversedData.map(object => object.label),
-        // name: "",
+        name: "top10",
         type: "bar",
         orientation: "h"
     };
@@ -82,15 +80,15 @@ d3.json('samples.json').then(function(data) {
     var data = [trace1];
 
     // Apply the group bar mode to the layout
-    // var layout = {
-    // title: "Greek gods search results",
-    // margin: {
-    //     l: 100,
-    //     r: 100,
-    //     t: 100,
-    //     b: 100
-    // }
-    // };
+    var layout = {
+    title: "To 10 bacteria Cultures",
+    margin: {
+        l: 100,
+        r: 100,
+        t: 100,
+        b: 100
+    }
+    };
 
     // Plot the chart to a div tag with id "bar-plot"
     Plotly.newPlot("bar", data);
