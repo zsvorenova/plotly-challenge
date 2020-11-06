@@ -47,7 +47,7 @@ d3.json('samples.json').then(function(data) {
 
     for (var i=0; i < idSample.otu_ids.length; i++) {
         sampleData[i]= {
-            otu_id: "OTU " + idSample.otu_ids[i],
+            otu_id: idSample.otu_ids[i],
             value: idSample.sample_values[i],
             label: idSample.otu_labels[i]
     }};
@@ -69,7 +69,7 @@ d3.json('samples.json').then(function(data) {
     // create trace
         var trace1 = {
         x: reversedData.map(object => object.value),
-        y: reversedData.map(object => object.otu_id),
+        y: reversedData.map(object => "OTU " + object.otu_id),
         text: reversedData.map(object => object.label),
         name: "top10",
         type: "bar",
@@ -82,16 +82,44 @@ d3.json('samples.json').then(function(data) {
     // Apply the group bar mode to the layout
     var layout = {
     title: "To 10 Bacteria Cultures",
-    margin: {
-        l: 50,
-        r: 50,
-        t: 50,
-        b: 50
-    }
+    // margin: {
+    //     l: 10,
+    //     r: 10,
+    //     t: 10,
+    //     b: 10
+    // }
     };
 
     // Plot the chart to a div tag with id "bar-plot"
     Plotly.newPlot("bar", data, layout);
+
+    // 4. BUBLE CHART
+    var trace1 = {
+        x: sampleData.map(i => i.otu_id),
+        y: sampleData.map(i => i.value),
+        text: sampleData.map(i => i.label),
+        mode: 'markers',
+        marker: {
+          color: sampleData.map(i => i.otu_id),
+          size: sampleData.map(i => i.value),
+          colorscale: "Viridis"     // available color schemes: "Viridis" "Cividis" "Greys" "YlGnBu" "Greens" "YlOrRd" "Bluered" "RdBu" 
+                                    // "Reds" "Blues" "Picnic" "Rainbow" "Portland" "Jet" "Hot" "Blackbody"
+                                    // "Earth" "Electric" ""
+        }
+      };
+      
+      var data = [trace1];
+      
+      var layout = {
+        title: `Bacteria Cultures Found in the Test Subject ${selectedID}`,
+        showlegend: false,
+        xaxis: {title: 'OTU ID'},
+        yaxis: {title: 'Value'}
+        // height: 600,
+        // width: 600
+      };
+      
+      Plotly.newPlot('bubble', data, layout);
 
     
 });
