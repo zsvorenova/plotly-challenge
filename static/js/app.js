@@ -81,17 +81,17 @@ d3.json('samples.json').then(function(data) {
 
     // Apply the group bar mode to the layout
     var layout = {
-    title: "To 10 bacteria Cultures",
+    title: "To 10 Bacteria Cultures",
     margin: {
-        l: 100,
-        r: 100,
-        t: 100,
-        b: 100
+        l: 50,
+        r: 50,
+        t: 50,
+        b: 50
     }
     };
 
     // Plot the chart to a div tag with id "bar-plot"
-    Plotly.newPlot("bar", data);
+    Plotly.newPlot("bar", data, layout);
 
     
 });
