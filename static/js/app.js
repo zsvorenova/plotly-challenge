@@ -40,18 +40,60 @@ d3.json('samples.json').then(function(data) {
 
     // 3. BAR CHART FOR SELECTED ID
     var idSample = samples.filter(filterId)[0]; // this is same as find above, returns first value
-    // const sample = samples.find(function(i) {
-    //     i.id === +selectedID;
-    //     // console.log(i.id);
-    // })
     console.log(idSample);
+    // collect tha data for the sample
     var otu = idSample.otu_ids;
     var values = idSample.sample_values;
     var labels = idSample.otu_labels;
+    // create an array of the data for plotting
+    var sampleData=[];
 
-    console.log(otu);
-    console.log(values);
-    console.log(labels);
+    for (var i=0; i < idSample.otu_ids.length; i++) {
+        sampleData[i]= {
+            otu_id: "OTU "+idSample.otu_ids[i],
+            value: idSample.sample_values[i],
+            label: idSample.otu_labels[i]
+    }};
+    console.log(sampleData)
+
+    // Sort the data descending by value
+    var sortedByValue = sampleData.sort((a, b) => b.value - a.value);
+    console.log(sortedByValue);
+
+    // Slice the first 10 objects for plotting
+    var top10Data = sortedByValue.slice(0, 10);
+    console.log(top10Data);
+
+    // Reverse the array to accommodate Plotly's defaults
+    reversedData = top10Data.reverse();
+    console.log(reversedData);
+
+    // Trace1 for the Greek Data
+    var trace1 = {
+        x: reversedData.map(object => object.value),
+        y: reversedData.map(object => object.otu_id),
+        text: reversedData.map(object => object.label),
+        // name: "",
+        type: "bar",
+        orientation: "h"
+    };
+
+    // data
+    var data = [trace1];
+
+    // Apply the group bar mode to the layout
+    // var layout = {
+    // title: "Greek gods search results",
+    // margin: {
+    //     l: 100,
+    //     r: 100,
+    //     t: 100,
+    //     b: 100
+    // }
+    // };
+
+    // Plot the chart to a div tag with id "bar-plot"
+    Plotly.newPlot("bar", data);
 
     
 });
