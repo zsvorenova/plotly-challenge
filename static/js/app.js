@@ -2,15 +2,16 @@
 dropdownMenu=d3.select("#selDataset");
 metadataHtml=d3.select("#sample-metadata");
 
-var selectedID = 940;    
-
-// function to select data based on the Test Subject Id:
-function filterId(i) {
-    return i.id == selectedID; // use only == as metadata has id as int and samples as string
-};
+var selectedID = 940;
 
 // get samples data for selected Test Subject Id:
-function getData(samples) {
+function getData(samples, metadata) {
+
+    function filterId(i) {
+        return i.id == selectedID; // use only == as metadata has id as int and samples as string
+    };
+
+    // function to select data based on the Test Subject Id:
     var idSample = samples.find(filterId); 
     console.log(idSample);
 
@@ -23,6 +24,9 @@ function getData(samples) {
             label: idSample.otu_labels[i]
     }};
     console.log(sampleData);
+    var otus = sampleData.map(i => i.otu_id);
+    var values = sampleData.map(i => i.value);
+    var labels = sampleData.map(i => i.label);
     
     // Slecte top10 bacteria data: sort, slice the first 10 objects and reverse the order for plotting
     var top10Data = sampleData
@@ -30,11 +34,19 @@ function getData(samples) {
                     .slice(0, 10)
                     .reverse();
     console.log(top10Data);
+    var top10Ids = top10Data.map(object => "OTU " + object.otu_id);
+    var top10Values = top10Data.map(object => object.value);
+    var top10Labels = top10Data.map(object => object.label);
 
-    BarChart(top10Data);
-    bubbleChart(sampleData);
+    // we can use 'find' function to select the metadata as an object (not array of 1)
+    var idMeta = metadata.find(filterId);
+    console.log(idMeta);
+    
+    // draw plots and write metadata for slected Test Subject ID
+    BarChart(top10Ids, top10Values, top10Labels);
+    bubbleChart(otus, values, labels);
+    getMetadata(idMeta);
 };
-// console.log(sampleData);
 
 // 1. add Test Subject Ids to dropdown menu
 function writeDropdownMenu (names) {
@@ -44,24 +56,21 @@ function writeDropdownMenu (names) {
 };
 
 // 2. METADATA for selected Test Subject
-function getMetadata(metadata) {
-    // we can use 'find' function to select the metadata as an object (not array of 1)
-    var idMeta = metadata.find(filterId);
-    console.log(idMeta);
+function getMetadata(idMeta) {
     // append sample metadata to html
     Object.entries(idMeta).forEach(([key, value]) => metadataHtml.append("p").text(`${key}: ${value}`)
     );
 };
 
 // 3. BAR CHART for selected Test Subject
-function BarChart(reversedData) {
+function BarChart(ids, values, labels) {
     
     // Plot the data for the test subject samples
     // create trace
     var trace1 = {
-        x: reversedData.map(object => object.value),
-        y: reversedData.map(object => "OTU " + object.otu_id),
-        text: reversedData.map(object => object.label),
+        x: values,
+        y: ids,
+        text: labels,
         name: "top10",
         type: "bar",
         orientation: "h"
@@ -77,18 +86,17 @@ function BarChart(reversedData) {
 
     // Plot the chart to a div tag with id "bar-plot"
     Plotly.newPlot("bar", data, layout);
-
 };
 
-function bubbleChart(sampleData) {
+function bubbleChart(ids, values, labels) {
     var trace1 = {
-        x: sampleData.map(i => i.otu_id),
-        y: sampleData.map(i => i.value),
-        text: sampleData.map(i => i.label),
+        x: ids,
+        y: values,
+        text: labels,
         mode: 'markers',
         marker: {
-          color: sampleData.map(i => i.otu_id),
-          size: sampleData.map(i => i.value),
+          color: ids,
+          size: values,
           colorscale: "Viridis"     // available color schemes: "Viridis" "Cividis" "Greys" "YlGnBu" "Greens" "YlOrRd" "Bluered" "RdBu" 
                                     // "Reds" "Blues" "Picnic" "Rainbow" "Portland" "Jet" "Hot" "Blackbody"
                                     // "Earth" "Electric" ""
@@ -108,7 +116,7 @@ function bubbleChart(sampleData) {
 }
 
 
-
+// read and download the data
 d3.json('samples.json').then(function(data) {
     // select data and save them in variables for next work
     console.log(data);
@@ -120,8 +128,7 @@ d3.json('samples.json').then(function(data) {
     console.log(samples);
    
     writeDropdownMenu(names);
-    getMetadata(metadata);
-    getData(samples);
+    getData(samples, metadata);
 });
 
 
