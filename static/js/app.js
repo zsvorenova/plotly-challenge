@@ -2,56 +2,54 @@
 dropdownMenu=d3.select("#selDataset");
 metadataHtml=d3.select("#sample-metadata");
 
-d3.json('samples.json').then(function(data) {
-    // select data and save them in variables for next work
-    console.log(data);
-    const names = data.names;
-    const metadata = data.metadata;
-    const samples = data.samples;
-    console.log(names);
-    console.log(metadata);
-    console.log(samples);
-
-
-    // 1. DROPDOWN MENU
-    // add ids to dropdown menu:
-    // for (var i=0; i < names.length; i++) {
-    //     dropdownMenu.append("option").attr("value", names[i]).text(`${names[i]}`);
-    // };
-
-    names.forEach(function(id) {
-        dropdownMenu.append("option").attr("value", id).text(`${id}`);
-    });
+var selectedID = 940;
+// var sampleData=[];
     
-    var selectedID = names[0];
-    console.log(`test id: ${selectedID}`);
 
-    // 2. METADATA FOR SELECTED ID
-    // select metadata based on the id:
-    function filterId(i) {
-        return i.id == selectedID; // use only == as metadata has id as int and samples as string
-    }
-    // we can use 'find' function to select the metadata as an object (not array of 1)
-    var idMeta = metadata.find(filterId);
-    console.log(idMeta);
-    // append sample metadata to html
-    Object.entries(idMeta).forEach(([key, value]) => metadataHtml.append("p").text(`${key}: ${value}`)
-    );
+// function to select data based on the Test Subject Id:
+function filterId(i) {
+    return i.id == selectedID; // use only == as metadata has id as int and samples as string
+};
 
-    // 3. BAR CHART FOR SELECTED ID
-    var idSample = samples.filter(filterId)[0]; // this is same as find above, returns first value
+// get samples data for selected Test Subject Id:
+function getSampleData(samples) {
+    var idSample = samples.find(filterId); 
     console.log(idSample);
-    
-    // create an array of the data for plotting
-    var sampleData=[];
 
+    var sampleData=[];
+    
     for (var i=0; i < idSample.otu_ids.length; i++) {
         sampleData[i]= {
             otu_id: idSample.otu_ids[i],
             value: idSample.sample_values[i],
             label: idSample.otu_labels[i]
     }};
-    console.log(sampleData)
+    console.log(sampleData);
+    return sampleData;
+};
+// console.log(sampleData);
+
+// 1. add Test Subject Ids to dropdown menu
+function writeDropdownMenu (names) {
+    names.forEach(function(id) {
+        dropdownMenu.append("option").attr("value", id).text(`${id}`);
+    });
+};
+
+// 2. METADATA for selected Test Subject
+function getMetadata(metadata) {
+    // we can use 'find' function to select the metadata as an object (not array of 1)
+    var idMeta = metadata.find(filterId);
+    console.log(idMeta);
+    // append sample metadata to html
+    Object.entries(idMeta).forEach(([key, value]) => metadataHtml.append("p").text(`${key}: ${value}`)
+    );
+};
+
+// 3. BAR CHART for selected Test Subject
+function BarChart(samples) {
+    sampleData = getSampleData(samples);
+    console.log(sampleData);
 
     // Sort the data descending by value
     var sortedByValue = sampleData.sort((a, b) => b.value - a.value);
@@ -82,18 +80,14 @@ d3.json('samples.json').then(function(data) {
     // Apply the group bar mode to the layout
     var layout = {
     title: "To 10 Bacteria Cultures",
-    // margin: {
-    //     l: 10,
-    //     r: 10,
-    //     t: 10,
-    //     b: 10
-    // }
     };
 
     // Plot the chart to a div tag with id "bar-plot"
     Plotly.newPlot("bar", data, layout);
 
-    // 4. BUBLE CHART
+};
+
+function bubbleChart(samples) {
     var trace1 = {
         x: sampleData.map(i => i.otu_id),
         y: sampleData.map(i => i.value),
@@ -108,19 +102,35 @@ d3.json('samples.json').then(function(data) {
         }
       };
       
-      var data = [trace1];
+    var data = [trace1];
       
-      var layout = {
+    var layout = {
         title: `Bacteria Cultures Found in the Test Subject ${selectedID}`,
         showlegend: false,
         xaxis: {title: 'OTU ID'},
         yaxis: {title: 'Value'}
-        // height: 600,
-        // width: 600
-      };
+    };
       
-      Plotly.newPlot('bubble', data, layout);
+    Plotly.newPlot('bubble', data, layout);
+}
 
-    
+
+
+d3.json('samples.json').then(function(data) {
+    // select data and save them in variables for next work
+    console.log(data);
+    const names = data.names;
+    const metadata = data.metadata;
+    const samples = data.samples;
+    console.log(names);
+    console.log(metadata);
+    console.log(samples);
+   
+    writeDropdownMenu(names);
+    getMetadata(metadata);
+    BarChart(samples);
+    bubbleChart(samples);
 });
+
+
 
