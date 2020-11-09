@@ -2,9 +2,7 @@
 dropdownMenu=d3.select("#selDataset");
 metadataHtml=d3.select("#sample-metadata");
 
-var selectedID = 940;
-// var sampleData=[];
-    
+var selectedID = 940;    
 
 // function to select data based on the Test Subject Id:
 function filterId(i) {
@@ -12,7 +10,7 @@ function filterId(i) {
 };
 
 // get samples data for selected Test Subject Id:
-function getSampleData(samples) {
+function getData(samples) {
     var idSample = samples.find(filterId); 
     console.log(idSample);
 
@@ -25,7 +23,16 @@ function getSampleData(samples) {
             label: idSample.otu_labels[i]
     }};
     console.log(sampleData);
-    return sampleData;
+    
+    // Slecte top10 bacteria data: sort, slice the first 10 objects and reverse the order for plotting
+    var top10Data = sampleData
+                    .sort((a, b) => b.value - a.value)
+                    .slice(0, 10)
+                    .reverse();
+    console.log(top10Data);
+
+    BarChart(top10Data);
+    bubbleChart(sampleData);
 };
 // console.log(sampleData);
 
@@ -47,25 +54,11 @@ function getMetadata(metadata) {
 };
 
 // 3. BAR CHART for selected Test Subject
-function BarChart(samples) {
-    sampleData = getSampleData(samples);
-    console.log(sampleData);
-
-    // Sort the data descending by value
-    var sortedByValue = sampleData.sort((a, b) => b.value - a.value);
-    console.log(sortedByValue);
-
-    // Slice the first 10 objects for plotting
-    var top10Data = sortedByValue.slice(0, 10);
-    console.log(top10Data);
-
-    // Reverse the array to accommodate Plotly's defaults
-    reversedData = top10Data.reverse();
-    console.log(reversedData);
-
+function BarChart(reversedData) {
+    
     // Plot the data for the test subject samples
     // create trace
-        var trace1 = {
+    var trace1 = {
         x: reversedData.map(object => object.value),
         y: reversedData.map(object => "OTU " + object.otu_id),
         text: reversedData.map(object => object.label),
@@ -87,7 +80,7 @@ function BarChart(samples) {
 
 };
 
-function bubbleChart(samples) {
+function bubbleChart(sampleData) {
     var trace1 = {
         x: sampleData.map(i => i.otu_id),
         y: sampleData.map(i => i.value),
@@ -128,9 +121,9 @@ d3.json('samples.json').then(function(data) {
    
     writeDropdownMenu(names);
     getMetadata(metadata);
-    BarChart(samples);
-    bubbleChart(samples);
+    getData(samples);
 });
+
 
 
 
