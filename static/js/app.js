@@ -1,62 +1,88 @@
 // Fetch the JSON data and console log it
-dropdownMenu=d3.select("#selDataset");
-metadataHtml=d3.select("#sample-metadata");
+var dropdownMenu=d3.select("#selDataset");
+var metadataHtml=d3.select("#sample-metadata");
 
-var selectedID = 940;
+// console.log(selectedID);
+function init() {
+    d3.json('samples.json').then(function(data) {
+        // select data and save them in variables for next work
+        console.log(data);
+        const names = data.names;
+        // id=names[0]
+
+        names.forEach(function(id) {
+            d3.select("#selDataset").append("option").attr("value", id).text(`${id}`);
+        });
+        getData(names[0]);
+    });
+    
+};
+
+function optionChanged(id) {
+    
+    getData(id);
+}
 
 // get samples data for selected Test Subject Id:
-function getData(samples, metadata) {
+function getData(id) {
+    d3.json('samples.json').then(function(data) {
+        // select data and save them in variables for next work
+        console.log(data);
+        const names = data.names;
+        const metadata = data.metadata;
+        const samples = data.samples;
+        console.log(names);
+        console.log(metadata);
+        console.log(samples);
+        
+        // function to select data based on the Test Subject Id:
+        var idSample = samples.find(sample => sample.id == id); 
+        console.log(idSample);
 
-    function filterId(i) {
-        return i.id == selectedID; // use only == as metadata has id as int and samples as string
-    };
+        var sampleData=[];
+        
+        for (var i=0; i < idSample.otu_ids.length; i++) {
+            sampleData[i]= {
+                otu_id: idSample.otu_ids[i],
+                value: idSample.sample_values[i],
+                label: idSample.otu_labels[i]
+        }};
+        console.log(sampleData);
+        var otus = sampleData.map(i => i.otu_id);
+        var values = sampleData.map(i => i.value);
+        var labels = sampleData.map(i => i.label);
+        
+        // Slecte top10 bacteria data: sort, slice the first 10 objects and reverse the order for plotting
+        var top10Data = sampleData
+                        .sort((a, b) => b.value - a.value)
+                        .slice(0, 10)
+                        .reverse();
+        console.log(top10Data);
+        var top10Ids = top10Data.map(object => "OTU " + object.otu_id);
+        var top10Values = top10Data.map(object => object.value);
+        var top10Labels = top10Data.map(object => object.label);
 
-    // function to select data based on the Test Subject Id:
-    var idSample = samples.find(filterId); 
-    console.log(idSample);
-
-    var sampleData=[];
-    
-    for (var i=0; i < idSample.otu_ids.length; i++) {
-        sampleData[i]= {
-            otu_id: idSample.otu_ids[i],
-            value: idSample.sample_values[i],
-            label: idSample.otu_labels[i]
-    }};
-    console.log(sampleData);
-    var otus = sampleData.map(i => i.otu_id);
-    var values = sampleData.map(i => i.value);
-    var labels = sampleData.map(i => i.label);
-    
-    // Slecte top10 bacteria data: sort, slice the first 10 objects and reverse the order for plotting
-    var top10Data = sampleData
-                    .sort((a, b) => b.value - a.value)
-                    .slice(0, 10)
-                    .reverse();
-    console.log(top10Data);
-    var top10Ids = top10Data.map(object => "OTU " + object.otu_id);
-    var top10Values = top10Data.map(object => object.value);
-    var top10Labels = top10Data.map(object => object.label);
-
-    // we can use 'find' function to select the metadata as an object (not array of 1)
-    var idMeta = metadata.find(filterId);
-    console.log(idMeta);
-    
-    // draw plots and write metadata for slected Test Subject ID
-    BarChart(top10Ids, top10Values, top10Labels);
-    bubbleChart(otus, values, labels);
-    getMetadata(idMeta);
+        // we can use 'find' function to select the metadata as an object (not array of 1)
+        var idMeta = metadata.find(metadata => metadata.id == id);
+        console.log(idMeta);
+        
+        // draw plots and write metadata for slected Test Subject ID
+        BarChart(top10Ids, top10Values, top10Labels);
+        bubbleChart(otus, values, labels, id);
+        getMetadata(idMeta);
+    });
 };
 
 // 1. add Test Subject Ids to dropdown menu
 function writeDropdownMenu (names) {
     names.forEach(function(id) {
-        dropdownMenu.append("option").attr("value", id).text(`${id}`);
+        d3.select("#selDataset").append("option").attr("value", id).text(`${id}`);
     });
 };
 
 // 2. METADATA for selected Test Subject
 function getMetadata(idMeta) {
+    metadataHtml.html("");
     // append sample metadata to html
     Object.entries(idMeta).forEach(([key, value]) => metadataHtml.append("p").text(`${key}: ${value}`)
     );
@@ -88,7 +114,7 @@ function BarChart(ids, values, labels) {
     Plotly.newPlot("bar", data, layout);
 };
 
-function bubbleChart(ids, values, labels) {
+function bubbleChart(ids, values, labels, id) {
     var trace1 = {
         x: ids,
         y: values,
@@ -106,7 +132,7 @@ function bubbleChart(ids, values, labels) {
     var data = [trace1];
       
     var layout = {
-        title: `Bacteria Cultures Found in the Test Subject ${selectedID}`,
+        title: `Bacteria Cultures Found in the Test Subject ${id}`,
         showlegend: false,
         xaxis: {title: 'OTU ID'},
         yaxis: {title: 'Value'}
@@ -117,20 +143,40 @@ function bubbleChart(ids, values, labels) {
 
 
 // read and download the data
-d3.json('samples.json').then(function(data) {
-    // select data and save them in variables for next work
-    console.log(data);
-    const names = data.names;
-    const metadata = data.metadata;
-    const samples = data.samples;
-    console.log(names);
-    console.log(metadata);
-    console.log(samples);
+// d3.json('samples.json').then(function(data) {
+//     // select data and save them in variables for next work
+//     console.log(data);
+//     const names = data.names;
+//     const metadata = data.metadata;
+//     const samples = data.samples;
+//     console.log(names);
+//     console.log(metadata);
+//     console.log(samples);
    
-    writeDropdownMenu(names);
-    getData(samples, metadata);
-});
+//     writeDropdownMenu(names);
+//     getData(samples, metadata);
+// });
 
+// // Update the restyled plot's values
+// function updatePlotly(newdata) {
+//     Plotly.restyle("pie", "values", [newdata]);
+// }
+
+// // Use D3 to create an event handler
+// d3.selectAll("#selDataset").on("change", updatePage);
+
+// function updatePage() {
+// //   // Use D3 to select the dropdown menu
+// //   var dropdownMenu = d3.select("#selDataset");
+//   // Assign the dropdown menu item ID to a variable
+//   var dropdownMenuID = dropdownMenu.property("id");
+//   // Assign the dropdown menu option to a variable
+//   var selectedOption = dropdownMenu.property("value");
+
+//   console.log(dropdownMenuID);
+//   console.log(selectedOption);
+// }
+init();
 
 
 
