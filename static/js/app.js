@@ -1,7 +1,7 @@
 // load initial page
 function init() {
     // fetch data
-    d3.json('samples.json').then(function(data) {
+    d3.json('./data/samples.json').then(function(data) {
         // save Test Subject Ids in var
         const names = data.names;
         // add Test Subject Ids to dropdown menu
@@ -21,7 +21,7 @@ function optionChanged(id) {
 // get data for selected Test Subject Id:
 function getData(id) {
     // fetch data
-    d3.json('samples.json').then(function(data) {
+    d3.json('./data/samples.json').then(function(data) {
         // and save them in variables
         const metadata = data.metadata;
         const samples = data.samples;
